@@ -13,35 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.abdulradi.validated
+package com.abdulradi.validated.validations
 package strings
 
 /** checks if a String matches the specified regular expression */
-class MatchesRegex(regex: String) extends Validation[String]:
-  override opaque type Valid <: String = String
-  override type Error = ValidationError
-  case class ValidationError(raw: String) extends Validation.Error {
-    def message: String = s"'$raw' doesn't match pattern '$regex'"
-  }
-  
-  final def validate(raw: String): Either[Error, Valid] = 
-    if raw.matches(regex) then Right(raw) else Left(ValidationError(raw))
+open class MatchesRegex(regex: String) extends FromPredicate[String](_.matches(regex), s"match pattern '$regex'")
 
 /** checks if a String starts with the specified prefix */
-class StartsWith(prefix: String) extends Validation[String]:
-  override opaque type Valid <: String = String
-  override type Error = ValidationError
-  case class ValidationError(raw: Raw) extends Validation.Error:
-    def message: String = s"'$raw' doesn't start with '$prefix'"
-  
-  final def validate(raw: String): Either[Error, Valid] = 
-    if raw.startsWith(prefix) then Right(raw) else Left(ValidationError(raw))
-
-object Ipv4 extends MatchesRegex("^(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})$")
-type Ipv4 = Ipv4.Valid
-
-object Ipv6 extends MatchesRegex("^([a-f0-9:]+:+)+[a-f0-9]+$")
-type Ipv6 = Ipv6.Valid
+open class StartsWith(prefix: String) extends FromPredicate[String](_.startsWith(prefix), s"start with '$prefix'")
 
 // TODO:
 //    EndsWith[S]: checks if a String ends with the suffix S
