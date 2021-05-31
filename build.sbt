@@ -7,8 +7,13 @@ inThisBuild(Seq(
   scalaVersion := "3.0.0",
 ))
 
-lazy val core = (project in file("core"))
-  .settings(name := "validated-core")
+lazy val core = (project in file("core")).settings(
+  name := "validated-core",
+  libraryDependencies ++= Seq(
+    "com.abdulradi" %% "happypath-core" % "0.2.0"
+  )
+)//.dependsOn(happypath)
+// lazy val happypath = ProjectRef(file("../happypath"), "core")
 
 lazy val root = (project in file("."))
   .aggregate(core)

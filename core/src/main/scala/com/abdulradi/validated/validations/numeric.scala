@@ -68,12 +68,12 @@ class NumericTypes[N: Numeric]:
   val EqualsOne = numeric.EqualsOne[N]
   type EqualsOne = EqualsOne.Valid
 
-  val GreaterThanOrEqualsZero = FromPredicate.Or(Positive, EqualsZero)
+  val GreaterThanOrEqualsZero = Positive or EqualsZero
   type GreaterThanOrEqualsZero = GreaterThanOrEqualsZero.Valid
 
   val GreaterThanOrEqualsOne = {
-    val _0 = FromPredicate.Or(GreaterThanOne, EqualsOne)
-    FromPredicate.And(_0, Positive)
+    val _0 = GreaterThanOne or EqualsOne
+    _0 and Positive
   }
   type GreaterThanOrEqualsOne = GreaterThanOrEqualsOne.Valid
 

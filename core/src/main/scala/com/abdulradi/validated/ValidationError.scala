@@ -13,14 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.abdulradi.validated.types.strings
+package com.abdulradi.validated
 
-import com.abdulradi.validated.validations.*, strings.*
+import com.abdulradi.happypath.ErrorCase
 
-val EmptyString = EqualsTo("")
-type EmptyString = EmptyString.Valid
-
-val NonEmptyString = EmptyString.negate
-type NonEmptyString = NonEmptyString.Valid
-
-// TODO: Feature parity with Refined https://github.com/fthomas/refined/blob/master/modules/core/shared/src/main/scala-3.0-/eu/timepit/refined/types/string.scala
+abstract class ValidationError(val message: String) extends Exception(message) derives ErrorCase

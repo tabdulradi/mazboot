@@ -13,70 +13,70 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.abdulradi.validated.validations
+package com.abdulradi.validated
+package validations
 
-trait Validation[_Raw]:
+import com.abdulradi.happypath.ErrorCase
+
+trait Validation[Raw]:
   outer =>
 
-  type Raw = _Raw
   opaque type Valid <: Raw = Raw
 
-  class ValidationError(raw: Raw) extends Validation.BaseValidationError(outer.formatErrorMessage(raw)):
-    override def toString: String = s"${outer.getClass.getSimpleName}.ValidationError($getMessage)"
+  final case class Error(raw: Raw) extends ValidationError(outer.formatErrorMessage(raw))
 
-  def validateEither(raw: Raw): Either[ValidationError, Valid]
-  def validate(raw: Raw): ValidationError | Valid
+  def validateWith[A](raw: Raw, handleSuccess: Valid => A, handleError: this.Error => A): A
+
+  final def validate(raw: Raw): this.Error | Valid = 
+    validateWith(raw, identity, identity)
+
+  final def validateEither(raw: Raw): Either[this.Error, Valid] = 
+    validateWith(raw, Right.apply, Left.apply)
+
   protected def formatErrorMessage(raw: Raw): String    
 
 object Validation:
-  abstract class BaseValidationError(val message: String) extends Exception(message)
+  def fromPredicate[Raw, V <: Raw](predicate: Raw => Boolean, predicateName: String): FromPredicate.Aux[Raw, V] = 
+    FromPredicate.aux(predicate, predicateName)
 
-  // type Aux[Raw, V] = Validation[Raw] { type Valid = V }
-
-abstract class FromPredicate[_Raw](
-  val predicate: _Raw => Boolean, 
-  val predicateName: String) extends Validation[_Raw]:
+abstract class FromPredicate0[Raw](
+  val predicate: Raw => Boolean, 
+  val predicateName: String) extends Validation[Raw]:
 
   override opaque type Valid <: Raw = Raw
 
-  final def validate(raw: Raw): ValidationError | Valid = 
-    if predicate(raw) then raw else ValidationError(raw)
-
-  final def validateEither(raw: Raw): Either[ValidationError, Valid] = 
-    if predicate(raw) then Right(raw) else Left(ValidationError(raw))
+  final def validateWith[A](raw: Raw, handleSuccess: Valid => A, handleError: this.Error => A): A = 
+    if predicate(raw) then handleSuccess(raw) else handleError(this.Error(raw))
 
   protected def formatErrorMessage(raw: Raw): String = 
     s"'$raw' doesn't pass the predicate: $predicateName"
 
+class FromPredicate[Raw]( // Doesn't know that Valid is actually Raw
+  predicate: Raw => Boolean, 
+  predicateName: String) extends FromPredicate0[Raw](predicate, predicateName):
+
+  infix def or[Valid2 <: Raw](that: FromPredicate.Aux[Raw, Valid2]): FromPredicate.Aux[Raw, Valid | Valid2]  =
+    FromPredicate.aux(
+      raw => this.predicate(raw) || that.predicate(raw),
+      s"${this.predicateName} or ${that.predicateName}"
+    )
+
+  infix def and[Valid2 <: Raw](that: FromPredicate.Aux[Raw, Valid2]): FromPredicate.Aux[Raw, Valid & Valid2]  = 
+    FromPredicate.aux(
+      raw => this.predicate(raw) && that.predicate(raw),
+      s"${this.predicateName} and ${that.predicateName}"
+    )
+
+  def negate: FromPredicate[Raw]  = 
+    new FromPredicate[Raw](raw => ! predicate(raw), s"not $predicateName")
+
 object FromPredicate:
   type Aux[Raw, V] = FromPredicate[Raw] { type Valid = V }
+
   def aux[Raw, V <: Raw](predicate: Raw => Boolean, predicateName: String): Aux[Raw, V] = 
     new FromPredicate[Raw](predicate, predicateName) {
       override type Valid = V
     }
-
-  open class And[_Raw, _Valid1 <: _Raw, _Valid2 <: _Raw](val first: Aux[_Raw, _Valid1], val second: Aux[_Raw, _Valid2]) extends FromPredicate[_Raw](
-    raw => first.predicate(raw) && second.predicate(raw),
-    s"${first.predicateName} and ${second.predicateName}"
-  ):
-    override type Valid = _Valid1 & _Valid2
-    override protected def formatErrorMessage(raw: Raw): String = 
-      if first.predicate(raw) then second.formatErrorMessage(raw) else first.formatErrorMessage(raw)
-
-  open class Or[_Raw, _Valid1 <: _Raw, _Valid2 <: _Raw](val first: Aux[_Raw, _Valid1], val second: Aux[_Raw, _Valid2]) extends FromPredicate[_Raw](
-    raw => first.predicate(raw) || second.predicate(raw),
-    s"${first.predicateName} or ${second.predicateName}"
-  ):
-    override type Valid = _Valid1 | _Valid2
-     override protected def formatErrorMessage(raw: Raw): String = 
-      s"'$raw' doesn't pass any of the predicates: $predicateName"
-
-  open class Not[_Raw, _Valid <: _Raw](val validation: Aux[_Raw, _Valid]) extends FromPredicate[_Raw](
-    raw => ! validation.predicate(raw),
-    s"not ${validation.predicateName}"
-  ):
-    override protected def formatErrorMessage(raw: Raw): String = 
-      s"'$raw' unexpectedly passes the predicate: ${validation.predicateName}"
 
 /** checks if a value equals to the specified reference */
 open class EqualsTo[A](a: A) extends FromPredicate[A](_ == a, s"equals $a")
