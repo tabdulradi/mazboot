@@ -10,7 +10,7 @@ inThisBuild(Seq(
 lazy val core = (project in file("core")).settings(
   name := "validated-core",
   libraryDependencies ++= Seq(
-    "com.abdulradi" %% "happypath-core" % "0.2.0"
+    "com.abdulradi" %% "happypath-core" % "0.3.0"
   )
 )//.dependsOn(happypath)
 // lazy val happypath = ProjectRef(file("../happypath"), "core")

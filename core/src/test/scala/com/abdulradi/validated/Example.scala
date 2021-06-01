@@ -26,9 +26,9 @@ import com.abdulradi.validated.ValidationError
   type Ipv4Or6 = Ipv4Or6.Valid
   
   println(Ipv4Or6.validate("128").mapError(_.getMessage))
-  // val g: Ipv4Or6 = Ipv4Or6.validate("128").getOrThrow // FIXME: getOrThrow exposes the Raw type in Or types (but not And). Probably due to the use of inline
 
-  val ipv4Or6: Ipv4Or6 = Ipv4Or6.validateEither("127.0.0.1").right.get // OrThrow
+  // val ipv4Or6: Ipv4Or6 = Ipv4Or6.validate("128").getOrThrow // FIXME: methods on Happypath LUBs Ipv4 | Ipv6 into String :/
+  val ipv4Or6: Ipv4Or6 = Ipv4Or6.validateEither("127.0.0.1").getOrElse(???) // workaround using Either
   // val ipv4Or6MightNotBeIpv4: Ipv4 = ipv4Or6 // Shouldn't compile
   val ipv4Or6MightNotBeIpv4: Ipv4 = Ipv4.validate(ipv4Or6).getOrThrow
 
@@ -39,14 +39,14 @@ import com.abdulradi.validated.ValidationError
   val x = NonEmptyString.validate("foo").getOrThrow
   val y: String = x
   // val z: EmptyString = x // Must not compile
-  NonEmptyString.validate("").toEither.left.get
+  NonEmptyString.validate("").toEither.swap.getOrElse(???)
 
 @main def doubleNegationTest(): Unit =
   val NotNonEmptyString = NonEmptyString.negate
   type NotNonEmptyString = NotNonEmptyString.Valid
   val a = NotNonEmptyString.validate("").getOrThrow
   // val b: EmptyString = a // Would be nice if this work
-  NotNonEmptyString.validate("lol").toEither.left.get
+  NotNonEmptyString.validate("lol").toEither.swap.getOrElse(???)
   
 @main def numericTest(): Unit = 
   val x: GreaterThanOrEqualsOne = GreaterThanOrEqualsOne.validateEither(1).fold(throw _, identity)

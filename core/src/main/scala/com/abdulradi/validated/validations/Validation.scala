@@ -51,7 +51,7 @@ abstract class FromPredicate0[Raw](
   protected def formatErrorMessage(raw: Raw): String = 
     s"'$raw' doesn't pass the predicate: $predicateName"
 
-class FromPredicate[Raw]( // Doesn't know that Valid is actually Raw
+open class FromPredicate[Raw]( // Doesn't know that Valid is actually Raw
   predicate: Raw => Boolean, 
   predicateName: String) extends FromPredicate0[Raw](predicate, predicateName):
 
