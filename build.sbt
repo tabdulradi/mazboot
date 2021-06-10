@@ -31,8 +31,15 @@ lazy val core = (project in file("core")).settings(
 )//.dependsOn(happypath)
 // lazy val happypath = ProjectRef(file("../happypath"), "core")
 
+lazy val `cats-parse` = project.dependsOn(core).settings(
+  name := "validated-cats-parse",
+  libraryDependencies ++= Seq(
+    "org.typelevel" %% "cats-parse" % "0.3.4"
+  )
+)
+
 lazy val root = (project in file("."))
-  .aggregate(core)
+  .aggregate(core, `cats-parse`)
   .settings(
     name := "validated",
     publish / skip := true
