@@ -44,7 +44,19 @@ println(LocalHost.validate("loll").toEither.left.map(_.getMessage))
 // Left('loll' doesn't pass the predicate: match pattern '^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$' and start with '127')
 ```
 
-## Integrated with Happypath
+
+
+## Getting started
+
+Add the following to your build.sbt
+
+```scala
+libraryDependencies += "com.abdulradi" %% "happypath-core" % "0.3.0"
+```
+## Integrations 
+
+### Happypath
+
 Did you notice we have been calling `toEither` and `getOrThrow` on a union type? This functionality comes from [happypath](https://github.com/tabdulradi/happypath). Allowing union types to behave like Either/Try without any implicits imports at the use site.
 ```scala
 import com.abdulradi.validated.types.ints.{GreaterThanOrEqualsOne, Positive}
@@ -59,6 +71,31 @@ Positive.validate(-1).fold(e => s"Error!! $e", n =>  s"Res = $n")
 // val res2: String = Error!! com.abdulradi.validated.validations.Validation$Error: '-1' doesn't pass the predicate: greater than 0
 ```
 
+Note: this integration is part of the core module, so nothing needs to be added to build.sbt
+
+###  Cats Parse
+
+Add this your build.sbt
+
+```scala
+libraryDependencies += "com.abdulradi" %% "happypath-cats-parse" % "0.2.0"
+```
+
+This module will allow you can easily extend cats parsers with a validation step
+
+```scala
+import cats.parse.Parser
+import com.abdulradi.validated.cats.parse.syntax.*
+import com.abdulradi.validated.types.net.*
+
+val parser = Parser.anyChar.rep.string.validateAs(Ipv4)
+val a: Ipv4 = parser.parse("127.0.0.1").fold(_ => ???, _._2)
+parser.parse("lol").fold(e => println(e.expected), _ => ???) 
+// Error(3,NonEmptyList(FailWith(3,'lol' doesn't pass the predicate: match pattern '^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$')))
+```
+
+
 
 ## Acknowledgements
+
 This library is inspired by [Refined](https://github.com/fthomas/refined) and tries to provide same functionality, but using Scala 3 constructs instead of relying on macros.
