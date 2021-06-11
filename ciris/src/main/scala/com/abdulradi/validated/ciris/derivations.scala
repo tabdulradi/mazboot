@@ -13,23 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.abdulradi.validated.types
-package net
+package com.abdulradi.validated.ciris
 
 import com.abdulradi.validated.validations.*
-import com.abdulradi.validated.validations.strings.*
-import com.abdulradi.validated.validations.numeric.*
-import com.abdulradi.validated.types.ints.*
+import ciris.*
 
-object Ipv4 extends MatchesRegex("^(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})$")
-type Ipv4 = Ipv4.Valid
 
-object Ipv6 extends MatchesRegex("^([a-f0-9:]+:+)+[a-f0-9]+$")
-type Ipv6 = Ipv6.Valid
-
-val PortNumber = {
-  val _0 = EqualsTo(65535)
-  val _1 = LessThan(65535) or _0
-  GreaterThanOrEqualsZero and _1
-}
-type PortNumber = PortNumber.Valid
+given [Raw, Valid <: Raw](using decoder: ConfigDecoder[String, Raw], v: ValidationOf.Aux[Valid, Raw]): ConfigDecoder[String, Valid] =
+  decoder.mapEither { (maybeKey, raw) => 
+    v.validation.validateWith(
+      raw, 
+      valid => 
+        Right(valid),
+      e => 
+        val prefix = maybeKey.map(key => s"At $key: ").getOrElse("")
+        Left(ConfigError(prefix + e.message))
+    )
+  }
