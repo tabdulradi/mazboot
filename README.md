@@ -78,10 +78,10 @@ Note: this integration is part of the core module, so nothing needs to be added 
 Add this your build.sbt
 
 ```scala
-libraryDependencies += "com.abdulradi" %% "happypath-cats-parse" % "0.2.0"
+libraryDependencies += "com.abdulradi" %% "happypath-cats-parse" % "0.3.0"
 ```
 
-This module will allow you can easily extend cats parsers with a validation step
+This module will allow you to easily extend cats parsers with a validation step
 
 ```scala
 import cats.parse.Parser
@@ -94,8 +94,33 @@ parser.parse("lol").fold(e => println(e.expected), _ => ???)
 // Error(3,NonEmptyList(FailWith(3,'lol' doesn't pass the predicate: match pattern '^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$')))
 ```
 
+###  Ciris
 
+Add this your build.sbt
+
+```scala
+libraryDependencies += "com.abdulradi" %% "happypath-ciris" % "0.3.0"
+```
+
+This module provides `ConfigDecoder` instance for all Validated types
+
+```scala
+import com.abdulradi.validated.types.net.*
+import com.abdulradi.validated.ciris.given
+import cats.effect.*
+import cats.implicits.*
+import ciris.*
+
+case class Config(host: Ipv4, port: PortNumber)
+
+object App extends IOApp.Simple:
+  val run = 
+    (
+      env("HOST").as[Ipv4],
+      env("PORT").as[PortNumber]
+    ).parMapN(Config.apply).load[IO].flatMap(IO.println)
+```
 
 ## Acknowledgements
 
-This library is inspired by [Refined](https://github.com/fthomas/refined) and tries to provide same functionality, but using Scala 3 constructs instead of relying on macros.
+This library is inspired by [Refined](https://github.com/fthomas/refined) and tries to provide similar functionality, but using Scala 3 constructs instead of relying on macros.

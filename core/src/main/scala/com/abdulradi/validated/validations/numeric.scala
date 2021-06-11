@@ -21,6 +21,9 @@ import math.Ordering.Implicits.*
 /** checks if a numeric value is greater than N */
 open class GreaterThan[N: Numeric](n: N) extends FromPredicate[N](_ > n, s"greater than $n")
 
+/** checks if a numeric value is less than N */
+open class LessThan[N: Numeric](n: N) extends FromPredicate[N](_ < n, s"less than $n")
+
 /** checks if a numeric value is positive */
 open class Positive[N](using N: Numeric[N]) extends GreaterThan[N](N.zero)
 

@@ -38,8 +38,16 @@ lazy val `cats-parse` = project.dependsOn(core).settings(
   )
 )
 
+lazy val ciris = project.dependsOn(core).settings(
+  name := "validated-ciris",
+  libraryDependencies ++= Seq(
+    "is.cir" %% "ciris" % "2.0.1",
+    "org.typelevel" %% "cats-effect" % "3.1.1" % Test
+  )
+)
+
 lazy val root = (project in file("."))
-  .aggregate(core, `cats-parse`)
+  .aggregate(core, `cats-parse`, ciris)
   .settings(
     name := "validated",
     publish / skip := true

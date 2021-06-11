@@ -18,10 +18,29 @@ package validations
 
 import com.abdulradi.happypath.ErrorCase
 
+/**
+ * Typeclass that allows lookup of a validation given a Valid type
+ */
+sealed trait ValidationOf[V]:
+  type R
+  def validation: Validation[R] { type Valid = V }
+
+object ValidationOf:
+  type Aux[Valid <: Raw, Raw] = ValidationOf[Valid] { type R = Raw}
+
+/**
+ * Module that can define a newtype together with validation logic
+ * All instances of this trait anywhere in the codebase can be retrieved
+ * from the Valid type via the `ValidationOf` typeclass
+ */
 trait Validation[Raw]:
   outer =>
 
   opaque type Valid <: Raw = Raw
+  
+  given ValidationOf[Valid] with
+    type R = Raw
+    def validation = outer
 
   final case class Error(raw: Raw) extends ValidationError(outer.formatErrorMessage(raw))
 
