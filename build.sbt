@@ -15,40 +15,50 @@
  */
 
  inThisBuild(Seq(
-  organizationName := "validated",
+  organizationName := "mazboot",
   description      := "Companion to the Scala std lib, providing useful subtypes like PositiveInt or StringMatchingRegex. As well as the ability to define custom validations.",
-  homepage         := Some(url("https://github.com/tabdulradi/validated")),
-  scmInfo          := Some(ScmInfo(url("https://github.com/tabdulradi/validated"), "scm:git@github.com:tabdulradi/validated.git")),
+  homepage         := Some(url("https://github.com/tabdulradi/mazboot")),
+  scmInfo          := Some(ScmInfo(url("https://github.com/tabdulradi/mazboot"), "scm:git@github.com:tabdulradi/mazboot.git")),
 
   scalaVersion := "3.0.0",
+  crossScalaVersions := Seq("3.0.0", "3.0.1-RC2")
 ))
 
-lazy val core = (project in file("core")).settings(
-  name := "validated-core",
-  libraryDependencies ++= Seq(
-    "com.abdulradi" %% "happypath-core" % "0.3.0"
-  )
-)//.dependsOn(happypath)
-// lazy val happypath = ProjectRef(file("../happypath"), "core")
+lazy val core = project.settings(
+  name := "mazboot-core",
+  libraryDependencies += "com.abdulradi" %% "happypath-core" % "0.3.0"
+)
+
+lazy val types = project.dependsOn(core).settings(
+  name := "mazboot-types"
+)
 
 lazy val `cats-parse` = project.dependsOn(core).settings(
-  name := "validated-cats-parse",
-  libraryDependencies ++= Seq(
-    "org.typelevel" %% "cats-parse" % "0.3.4"
-  )
+  name := "mazboot-cats-parse",
+  libraryDependencies += "org.typelevel" %% "cats-parse" % "0.3.4"
 )
 
 lazy val ciris = project.dependsOn(core).settings(
-  name := "validated-ciris",
-  libraryDependencies ++= Seq(
-    "is.cir" %% "ciris" % "2.0.1",
-    "org.typelevel" %% "cats-effect" % "3.1.1" % Test
-  )
+  name := "mazboot-ciris",
+  libraryDependencies += "is.cir" %% "ciris" % "2.0.1"
 )
 
-lazy val root = (project in file("."))
-  .aggregate(core, `cats-parse`, ciris)
-  .settings(
-    name := "validated",
-    publish / skip := true
-  )
+lazy val tests = 
+  project
+    .dependsOn(types, `cats-parse`, ciris)
+    .settings(
+      name := "mazboot-tests",
+      publish / skip := true,
+      libraryDependencies ++= Seq(
+        "org.typelevel" %% "cats-effect" % "3.1.1"
+      )
+    )
+
+lazy val root = 
+  project
+    .in(file("."))
+    .aggregate(core, types, `cats-parse`, ciris, tests)
+    .settings(
+      name := "mazboot",
+      publish / skip := true
+    )

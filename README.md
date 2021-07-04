@@ -1,10 +1,12 @@
-# Validated
+# Mazboot (previously called Validated)
 
-Companion to the Scala std lib, providing newtypes + validations. It has usefull types out of the box (like `PositiveInt` or `MatchesRegex`), as well as the ability to define your own custom validated types.
+Companion to the Scala std lib, providing newtypes + validations. It has usefull types out of the box (like `PositiveInt` or `MatchesRegex`), as well as the ability to define your own custom validated types.  
+  
+"mazboot" (مظبوط) is an Egyptian Arabic word that could mean "correct", "proper", or "valid".
 
 Example:
 ```scala
-scala> import com.abdulradi.validated.types.strings.NonEmptyString
+scala> import mazboot.strings.NonEmptyString
 
 scala> NonEmptyString.validate("") // Error messages out of the box                   
 val res0: NonEmptyString.Error | NonEmptyString.Valid = NonEmptyString.Error: '' doesn't pass the predicate: not equals
@@ -19,13 +21,13 @@ scala> val butNotTheOtherWayAround: NonEmptyString = "lol" // Doesn't compile, m
 1 |val butNotTheOtherWayAround: NonEmptyString = "lol"
   |                                              ^^^^^
   |            Found:    ("lol" : String)
-  |            Required: com.abdulradi.validated.types.strings.NonEmptyString
+  |            Required: mazboot.strings.NonEmptyString
 ```
 
 You can also make your own types
 ```scala
-import com.abdulradi.validated.validations.strings.StartsWith
-import com.abdulradi.validated.types.net.Ipv4
+import mazboot.validations.strings.StartsWith
+import mazboot.net.Ipv4
 
 val StartsWith127 = StartsWith("127")
 type StartsWith127 = StartsWith127.Valid
@@ -51,7 +53,7 @@ println(LocalHost.validate("loll").toEither.left.map(_.getMessage))
 Add the following to your build.sbt
 
 ```scala
-libraryDependencies += "com.abdulradi" %% "validated-core" % "0.3.0"
+libraryDependencies += "com.abdulradi" %% "mazboot-types" % "0.4.0"
 ```
 ## Integrations 
 
@@ -59,7 +61,7 @@ libraryDependencies += "com.abdulradi" %% "validated-core" % "0.3.0"
 
 Did you notice we have been calling `toEither` and `getOrThrow` on a union type? This functionality comes from [happypath](https://github.com/tabdulradi/happypath). Allowing union types to behave like Either/Try without any implicits imports at the use site.
 ```scala
-import com.abdulradi.validated.types.ints.{GreaterThanOrEqualsOne, Positive}
+import mazboot.ints.{GreaterThanOrEqualsOne, Positive}
 
 val res = // ValidationError | Int
     for
@@ -68,7 +70,7 @@ val res = // ValidationError | Int
     yield a + b
 
 Positive.validate(-1).fold(e => s"Error!! $e", n =>  s"Res = $n")
-// val res2: String = Error!! com.abdulradi.validated.validations.Validation$Error: '-1' doesn't pass the predicate: greater than 0
+// val res2: String = Error!! mazboot.validations.Validation$Error: '-1' doesn't pass the predicate: greater than 0
 ```
 
 Note: this integration is part of the core module, so nothing needs to be added to build.sbt
@@ -78,15 +80,15 @@ Note: this integration is part of the core module, so nothing needs to be added 
 Add this your build.sbt
 
 ```scala
-libraryDependencies += "com.abdulradi" %% "validated-cats-parse" % "0.3.0"
+libraryDependencies += "com.abdulradi" %% "mazboot-cats-parse" % "0.4.0"
 ```
 
 This module will allow you to easily extend cats parsers with a validation step
 
 ```scala
 import cats.parse.Parser
-import com.abdulradi.validated.cats.parse.syntax.*
-import com.abdulradi.validated.types.net.*
+import mazboot.cats.parse.syntax.*
+import mazboot.net.*
 
 val parser = Parser.anyChar.rep.string.validateAs(Ipv4)
 val a: Ipv4 = parser.parse("127.0.0.1").fold(_ => ???, _._2)
@@ -99,14 +101,14 @@ parser.parse("lol").fold(e => println(e.expected), _ => ???)
 Add this your build.sbt
 
 ```scala
-libraryDependencies += "com.abdulradi" %% "validated-ciris" % "0.3.0"
+libraryDependencies += "com.abdulradi" %% "mazboot-ciris" % "0.4.0"
 ```
 
 This module provides `ConfigDecoder` instance for all Validated types
 
 ```scala
-import com.abdulradi.validated.types.net.*
-import com.abdulradi.validated.ciris.given
+import mazboot.net.*
+import mazboot.ciris.given
 import cats.effect.*
 import cats.implicits.*
 import ciris.*
@@ -123,4 +125,4 @@ object App extends IOApp.Simple:
 
 ## Acknowledgements
 
-This library is inspired by [Refined](https://github.com/fthomas/refined) and tries to provide similar functionality, but using Scala 3 constructs instead of relying on macros.
+This library is inspired by [Refined](https://github.com/fthomas/refined) and tries to provide similar functionality using Scala 3 constructs.
