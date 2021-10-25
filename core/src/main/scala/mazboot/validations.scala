@@ -16,6 +16,8 @@
 package mazboot
 package validations
 
+import scala.util.CommandLineParser
+
 import com.abdulradi.happypath.ErrorCase
 
 /**
@@ -53,6 +55,9 @@ trait Validation[Raw]:
     validateWith(raw, Right.apply, Left.apply)
 
   protected def formatErrorMessage(raw: Raw): String    
+
+  given (using Raw: CommandLineParser.FromString[Raw]): CommandLineParser.FromString[Valid] with
+    def fromString(s: String): Valid = validateWith(Raw.fromString(s), identity, e => throw IllegalArgumentException(e.message))
 
 object Validation:
   def fromPredicate[Raw, V <: Raw](predicate: Raw => Boolean, predicateName: String): FromPredicate.Aux[Raw, V] = 

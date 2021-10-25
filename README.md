@@ -46,6 +46,19 @@ println(LocalHost.validate("loll").toEither.left.map(_.getMessage))
 // Left('loll' doesn't pass the predicate: match pattern '^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$' and start with '127')
 ```
 
+Also, it works out of the box with Scala 3' Main methods syntax
+```scala
+import mazboot.net.{Ipv4, PortNumber}
+
+@main def myCmdLineApp(host: Ipv4, port: PortNumber): Unit = 
+  println(s"host = $host, port = $port")
+```
+```
+$ sbt run 127.0.0.1 99999
+Illegal command line after first argument: java.lang.IllegalArgumentException: '99999' doesn't pass the predicate: greater than 0 or equals 0 and less than 65535 or equals 65535
+```
+
+
 
 
 ## Getting started
