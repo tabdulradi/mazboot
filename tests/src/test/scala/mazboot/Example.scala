@@ -97,3 +97,7 @@ import mazboot.ValidationError
   // val e = GreaterThanOrEqualsOne.validate(-1).
   
   println("Res = " + res)
+
+// sbt "tests/test:runMain mazboot.tests.cmdLineTest 127.0.0.1 99999"
+@main def cmdLineTest(host: Ipv4, port: PortNumber): Unit = 
+  println(s"host = $host, port = $port")
