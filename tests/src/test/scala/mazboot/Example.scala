@@ -101,3 +101,10 @@ import mazboot.ValidationError
 // sbt "tests/test:runMain mazboot.tests.cmdLineTest 127.0.0.1 99999"
 @main def cmdLineTest(host: Ipv4, port: PortNumber): Unit = 
   println(s"host = $host, port = $port")
+
+@main def unapplyTest() = 
+  1 match {
+    case GreaterThanOne(b) => println("GreaterThanOne")
+    case Positive(a) => println("Positive")
+    case n => println("just a number")
+  } // prints Positive as expected

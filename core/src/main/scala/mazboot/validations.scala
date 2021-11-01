@@ -56,6 +56,9 @@ trait Validation[Raw]:
 
   protected def formatErrorMessage(raw: Raw): String    
 
+  final def unapply(raw: Raw): Option[Valid] =
+    validateWith(raw, Some.apply, _ => None)
+
   given (using Raw: CommandLineParser.FromString[Raw]): CommandLineParser.FromString[Valid] with
     def fromString(s: String): Valid = validateWith(Raw.fromString(s), identity, e => throw IllegalArgumentException(e.message))
 
