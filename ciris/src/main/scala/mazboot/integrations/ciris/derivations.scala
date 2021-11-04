@@ -19,7 +19,7 @@ import mazboot.validations.*
 import ciris.*
 
 
-given [Raw, Valid <: Raw](using decoder: ConfigDecoder[String, Raw], v: ValidationOf.Aux[Valid, Raw]): ConfigDecoder[String, Valid] =
+given [Valid](using v: Validation.Of[Valid], decoder: ConfigDecoder[String, v.R]): ConfigDecoder[String, Valid] =
   decoder.mapEither { (maybeKey, raw) => 
     v.validation.validateWith(
       raw, 
