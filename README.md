@@ -66,7 +66,7 @@ Illegal command line after first argument: java.lang.IllegalArgumentException: '
 Add the following to your build.sbt
 
 ```scala
-libraryDependencies += "com.abdulradi" %% "mazboot-types" % "0.4.0"
+libraryDependencies += "com.abdulradi" %% "mazboot-types" % "0.5.0"
 ```
 ## Integrations 
 
@@ -93,7 +93,7 @@ Note: this integration is part of the core module, so nothing needs to be added 
 Add this your build.sbt
 
 ```scala
-libraryDependencies += "com.abdulradi" %% "mazboot-cats-parse" % "0.4.0"
+libraryDependencies += "com.abdulradi" %% "mazboot-cats-parse" % "0.5.0"
 ```
 
 This module will allow you to easily extend cats parsers with a validation step
@@ -114,7 +114,7 @@ parser.parse("lol").fold(e => println(e.expected), _ => ???)
 Add this your build.sbt
 
 ```scala
-libraryDependencies += "com.abdulradi" %% "mazboot-ciris" % "0.4.0"
+libraryDependencies += "com.abdulradi" %% "mazboot-ciris" % "0.5.0"
 ```
 
 This module provides `ConfigDecoder` instance for all Validated types
