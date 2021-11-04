@@ -114,8 +114,7 @@ parser.parse("lol").fold(e => println(e.expected), _ => ???)
 Add this your build.sbt
 
 ```scala
-libraryDependencies += "com.abdulradi" %% "mazboot-ciris" % "
-.0"
+libraryDependencies += "com.abdulradi" %% "mazboot-ciris" % "0.5.0"
 ```
 
 This module provides `ConfigDecoder` instance for all Validated types
