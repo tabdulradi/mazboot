@@ -23,9 +23,9 @@ import ciris.*
 
 case class Config(host: Ipv4, port: PortNumber)
   
-// HOST=127.0.0.1 PORT=80 sbt ciris/test:run
-// HOST=lol PORT=80 sbt ciris/test:run
-// HOST=127.0.0.1 PORT=999999 sbt ciris/test:run
+// HOST=127.0.0.1 PORT=80 sbt "tests/test:runMain mazboot.tests.integrations.ciris.ConfigTest"
+// HOST=lol PORT=80 sbt "tests/test:runMain mazboot.tests.integrations.ciris.ConfigTest"
+// HOST=127.0.0.1 PORT=999999 sbt "tests/test:runMain mazboot.tests.integrations.ciris.ConfigTest"
 object ConfigTest extends IOApp.Simple:
   val run = 
     (
