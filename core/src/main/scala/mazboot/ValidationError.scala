@@ -17,4 +17,5 @@ package mazboot
 
 import com.abdulradi.happypath.ErrorCase
 
-abstract class ValidationError(val message: String) extends Exception(message) derives ErrorCase
+abstract class ValidationError(validation: validations.Validation[_], raw: validation.Valid) 
+  extends Exception(validation.formatErrorMessage(raw)) derives ErrorCase

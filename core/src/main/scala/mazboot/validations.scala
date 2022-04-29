@@ -35,7 +35,7 @@ trait Validation[Raw]:
     type R = Raw
     def validation = outer
 
-  final case class Error(raw: Raw) extends ValidationError(outer.formatErrorMessage(raw))
+  final case class Error(raw: Raw) extends ValidationError(raw, outer)
 
   def validateWith[A](raw: Raw, handleSuccess: Valid => A, handleError: this.Error => A): A
 
@@ -45,13 +45,13 @@ trait Validation[Raw]:
   final def validateEither(raw: Raw): Either[this.Error, Valid] = 
     validateWith(raw, Right.apply, Left.apply)
 
-  protected def formatErrorMessage(raw: Raw): String    
+  def formatErrorMessage(raw: Raw): String  
 
   final def unapply(raw: Raw): Option[Valid] =
     validateWith(raw, Some.apply, _ => None)
 
   given (using Raw: CommandLineParser.FromString[Raw]): CommandLineParser.FromString[Valid] with
-    def fromString(s: String): Valid = validateWith(Raw.fromString(s), identity, e => throw IllegalArgumentException(e.message))
+    def fromString(s: String): Valid = validateWith(Raw.fromString(s), identity, e => throw IllegalArgumentException(formatErrorMessage(e.raw)))
 
 object Validation:
   def fromPredicate[Raw, V <: Raw](predicate: Raw => Boolean, predicateName: String): FromPredicate.Aux[Raw, V] = 
@@ -64,21 +64,20 @@ object Validation:
     type R
     def validation: Validation[R] { type Valid = V }
 
-abstract class FromPredicate0[Raw](
-  val predicate: Raw => Boolean, 
-  val predicateName: String) extends Validation[Raw]:
+// Like it's super class, it know that Valid is actually Raw using the override trick needed to implement validateWith
+abstract class FromPredicate0[Raw](val predicate: Raw => Boolean) extends Validation[Raw]:
 
   override opaque type Valid <: Raw = Raw
 
   final def validateWith[A](raw: Raw, handleSuccess: Valid => A, handleError: this.Error => A): A = 
     if predicate(raw) then handleSuccess(raw) else handleError(this.Error(raw))
 
-  protected def formatErrorMessage(raw: Raw): String = 
-    s"'$raw' doesn't pass the predicate: $predicateName"
+// Unlike it's parent class, we don't have visibiltity through the opaque type. 
+open class FromPredicate[Raw](predicate: Raw => Boolean) extends FromPredicate0[Raw](predicate):
+  def predicateName = this.toString // We hope that conrete predicate will be an `object`
 
-open class FromPredicate[Raw]( // Doesn't know that Valid is actually Raw
-  predicate: Raw => Boolean, 
-  predicateName: String) extends FromPredicate0[Raw](predicate, predicateName):
+  def formatErrorMessage(raw: Raw): String =
+    s"'$raw' is not a valid $predicateName"  
 
   infix def or[Valid2 <: Raw](that: FromPredicate.Aux[Raw, Valid2]): FromPredicate.Aux[Raw, Valid | Valid2]  =
     FromPredicate.aux(
@@ -92,16 +91,22 @@ open class FromPredicate[Raw]( // Doesn't know that Valid is actually Raw
       s"${this.predicateName} and ${that.predicateName}"
     )
 
-  def negate: FromPredicate[Raw]  = 
-    new FromPredicate[Raw](raw => ! predicate(raw), s"not $predicateName")
+  def negate: FromPredicate[Raw] = 
+    new FromPredicate[Raw](raw => ! predicate(raw)) {
+      override def formatErrorMessage(raw: Raw): String = 
+        s"'$raw' is not a valid non-$predicateName"  
+    }
 
 object FromPredicate:
   type Aux[Raw, V] = FromPredicate[Raw] { type Valid = V }
 
-  def aux[Raw, V <: Raw](predicate: Raw => Boolean, predicateName: String): Aux[Raw, V] = 
-    new FromPredicate[Raw](predicate, predicateName) {
+  def aux[Raw, V <: Raw](predicate: Raw => Boolean, pName: String): Aux[Raw, V] = 
+    new FromPredicate[Raw](predicate) {
       override type Valid = V
+      override val predicateName = pName
     }
 
 /** checks if a value equals to the specified reference */
-open class EqualsTo[A](a: A) extends FromPredicate[A](_ == a, s"equals $a")
+open class EqualsTo[A](a: A) extends FromPredicate[A](_ == a):
+  override def formatErrorMessage(raw: A): String = 
+    s"'$raw' doesn't equal $a"
